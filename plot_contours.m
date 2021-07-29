@@ -10,6 +10,13 @@ addpath 'colormaps';
 [X,Y,Z] = meshgrid(ym,xm,zm);
 L = y(end);
 
+% check for presence of large files
+if ~isfile('vorticity_MA.mat') || ~isfile('vorticity_MC.mat')
+    disp('Error: vorticity_MA.mat and/or vorticiy_MC.mat are missing.')
+    disp('Check the README for details on obtaining')
+    return
+end
+
 %% MA data
 
 load vorticity_MA.mat;
