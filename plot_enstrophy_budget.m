@@ -105,17 +105,17 @@ plot(xm./0.00643,stretch_MA_avg_x,'r--','linewidth',2)
 
 LHS_MC_avg_x = movmean(viscous_MC_avg+baroclinic_MC_avg-dilatation_MC_avg+forcing_MC_avg+stretch_MC_avg,30); %movmean(LHS_MC_avg,30);
 LHS_MA_avg_x = movmean(viscous_MA_avg+baroclinic_MA_avg-dilatation_MA_avg+forcing_MA_avg+stretch_MA_avg,30); %movmean(LHS_MA_avg,30);-Dissipation_MA_avg+Baroclinic_MA_avg+Dilatation_MA_avg+Forcing_MA_avg+Stretch_MA_avg;
-plot(xm./0.00631,LHS_MC_avg_x,'m','linewidth',2),hold on
-plot(xm./0.00643,LHS_MA_avg_x,'m--','linewidth',2)
+%plot(xm./0.00631,LHS_MC_avg_x,'m','linewidth',2),hold on
+%plot(xm./0.00643,LHS_MA_avg_x,'m--','linewidth',2)
 
 LHS_MC_avg_x = movmean(LHS_MC_avg,30);
 LHS_MA_avg_x = movmean(LHS_MA_avg,30);
-H = plot(xm./0.00631,LHS_MC_avg_x,'r','linewidth',2);hold on
-plot(xm./0.00643,LHS_MA_avg_x,'r--','linewidth',2)
+%H = plot(xm./0.00631,LHS_MC_avg_x,'r','linewidth',2);hold on
+%plot(xm./0.00643,LHS_MA_avg_x,'r--','linewidth',2)
 
-set(gca,'FontSize',14,'linewidth',1,'fontweight','bold')
-xlabel('$x/l_f$','interpreter','latex','fontsize',16,'fontweight','bold')
-ylabel('Enstrophy $[1/s^3]$','interpreter','latex','fontsize',16,'fontweight','bold')
+set(gca,'FontSize',14,'linewidth',1)
+xlabel('$x/l_f$','interpreter','latex','fontsize',16)
+ylabel('Enstrophy $[1/s^3]$','interpreter','latex','fontsize',16)
 axis square
 xlim = get(gca,'xlim');
 % axis([0 10 -10*10^12 2*10^12])
@@ -124,16 +124,15 @@ set(gcf,'color','w')
 % set(gcf,'units','normalized','outerposition',[0 0 0.5 1])
 legend('Dissipation MC','Dissipation MA','Baroclinic MC','Baroclinic MA',...
     'Dilatation MC','Dilatation MA','Forcing MC','Forcing MA',...
-    'Stretch MC','Stretch MA','residual MC','residual MC','location','se')
+    'Stretch MC','Stretch MA','location','se','interpreter','latex');%'residual MC','residual MC','location','se')
 legend boxoff
 set(gcf,'color','w')
 set(gcf,'units','centimeters')
 pos = get(gcf,'position');
 AR = pos(3)/pos(4);
 set(gcf,'units','centimeters','position',[0,0,6.7*2,6.7*2]);
-% set(gca,'FontSize',16);
-% export_fig('Enstrophy_budget_dim.pdf',h);
-% close all
+
+exportgraphics(h, 'enstrophy_budget_dim.pdf', 'ContentType', 'vector')
 
 %% nondimensional plot
 
@@ -214,7 +213,7 @@ yticks([-0.6 -0.3 0 0.3])
 set(gcf,'color','w')
 legend('Viscous MA','Viscous MC','Baroclinic MA','Baroclinic MC',...
     'Dilatation MA','Dilatation MC','Forcing MA','Forcing MC',...
-    'Stretch MA','Stretch MC','location','se')
+    'Stretch MA','Stretch MC','location','se','interpreter','latex')
 % set(gcf,'units','normalized','outerposition',[0 0 0.5 1])
 legend boxoff
 set(gcf,'color','w')
