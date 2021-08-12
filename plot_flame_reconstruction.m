@@ -172,6 +172,7 @@ ylabel('$\langle \delta_{t}|T \rangle/ \delta_{L}$','interpreter','latex','FontS
 legend('MA','MC','MA Laminar','MC Laminar','location','southeast','interpreter','latex')
 legend boxoff
 set(gcf,'units','centimeters','position',[0,0,6.7*2,6.7*2]);
+grid on
 axis_p = get(gca,'position');
 ylim = get(gca,'ylim');
 axis([300 1700 -2 25])
@@ -190,6 +191,7 @@ ylabel('$\langle \tilde{\chi}|T \rangle \delta_{L}$','interpreter','latex','Font
 axis([300 1700 0 2])
 set(gcf,'color','w')
 set(gcf,'units','centimeters')
+grid on
 pos = get(gcf,'position');
 AR = pos(3)/pos(4);
 set(gcf,'units','centimeters','position',[0,0,6.7*2,6.7*2]);
@@ -233,6 +235,7 @@ xlabel('$\langle n|T \rangle/ \delta_{L}$','interpreter','latex','FontSize',16);
 ylabel('$T$ [K]','interpreter','latex','FontSize',16);
 axis([-1 12 0 1700])
 axis square
+grid on
 axes('Position',[.38 .2 .5 .5]);
 box on
 axis square
@@ -243,15 +246,16 @@ plot(struc_lam_MC./delta_L_MC,T_lam_MC,'r','linewidth',2)
 plot([-1 0.1],[Trans_T Trans_T],'k-.','linewidth',1)
 text(-.9,Trans_T-60,'$\downarrow$ Preheat','interpreter','latex','FontSize',12)
 text(-.9,Trans_T+60,'$\uparrow$ Reaction','interpreter','latex','FontSize',12)
-set(gca,'FontSize',14,'linewidth',1);%,'fontname','Times New Roman')
+set(gca,'FontSize',12,'linewidth',1);%,'fontname','Times New Roman')
 axis([-1 2 0 1400])
 set(gcf,'color','w')
 set(gcf,'units','centimeters')
 pos = get(gcf,'position');
 AR = pos(3)/pos(4);
 set(gcf,'units','centimeters','position',[0,0,6.7*2,6.7*2]);
+grid on
 
-legend('MA','MC','MA Laminar','MC Laminar','location','SE','interpreter','latex')
+legend('MA','MC','MA Laminar','MC Laminar','location','SE','interpreter','latex','FontSize',14)
 legend boxoff
 
 exportgraphics(h, 'reconstructed_flame.pdf', 'ContentType', 'vector')
