@@ -21,7 +21,13 @@ U = NGAdatareader_large(filename,1);
 V = NGAdatareader_large(filename,2);
 W = NGAdatareader_large(filename,3);
 
-[omegaX,omegaY,omegaZ] = curl(X,Y,Z,U,V,W);
+%[omegaY,omegaX,omegaZ] = curl(X,Y,Z,U,V,W);
+[tmpXy,tmpXx,tmpXz] = gradient(U,dx,dy,dz);
+[tmpYy,tmpYx,tmpYz] = gradient(V,dx,dy,dz);
+[tmpZy,tmpZx,tmpZz] = gradient(W,dx,dy,dz);
+omegaX = tmpZy - tmpYz;
+omegaY = tmpXz - tmpZx;
+omegaZ = tmpYx - tmpXy;
 
 T = NGAdatareader_large(filename,16);
 H = NGAdatareader_large(filename,12);
@@ -35,7 +41,13 @@ U = NGAdatareader_large(filename,1);
 V = NGAdatareader_large(filename,2);
 W = NGAdatareader_large(filename,3);
 
-[omegaX,omegaY,omegaZ] = curl(X,Y,Z,U,V,W);
+%[omegaY,omegaX,omegaZ] = curl(X,Y,Z,U,V,W);
+[tmpXy,tmpXx,tmpXz] = gradient(U,dx,dy,dz);
+[tmpYy,tmpYx,tmpYz] = gradient(V,dx,dy,dz);
+[tmpZy,tmpZx,tmpZz] = gradient(W,dx,dy,dz);
+omegaX = tmpZy - tmpYz;
+omegaY = tmpXz - tmpZx;
+omegaZ = tmpYx - tmpXy;
 
 T = NGAdatareader_large(filename,16);
 H = NGAdatareader_large(filename,12);

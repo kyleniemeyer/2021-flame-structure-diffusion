@@ -70,7 +70,7 @@ optdata_filenames = ["optdata.init"];
 numfiles = length(filenames);
 
 [x,y,z,xm,ym,zm,nx,ny,nz,dx,dy,dz] = NGA_grid_reader(configfile);
-[X,Y,Z] = meshgrid(ym,xm,zm);
+[X,Y,Z] = meshgrid(xm,ym,zm);
 
 %% Read data
 
@@ -78,18 +78,18 @@ for n = 1:numfiles
     U = NGAdatareader_large(fullfile(data_path, filenames(n,:)), 1);
     V = NGAdatareader_large(fullfile(data_path, filenames(n,:)), 2);
     W = NGAdatareader_large(fullfile(data_path, filenames(n,:)), 3);
-    
-    % calculate enstrophy: 0.5 * omega^2
-    [omegaX,omegaY,omegaZ] = curl(X,Y,Z,U,V,W);
-    TMP1 = 0.5*(omegaX.*omegaX + omegaY.*omegaY + omegaZ.*omegaZ);
-    LHS = mean(mean(TMP1,3),2);
 
-    clear TMP1
+    % calculate gradient of velocity field
+    [tmpXy,tmpXx,tmpXz] = gradient(U,dx,dy,dz);
+    [tmpYy,tmpYx,tmpYz] = gradient(V,dx,dy,dz);
+    [tmpZy,tmpZx,tmpZz] = gradient(W,dx,dy,dz);
     
-     % Viscous effects part 1
-    [tmpXx,tmpXy,tmpXz] = gradient(U,dx,dy,dz);
-    [tmpYx,tmpYy,tmpYz] = gradient(V,dx,dy,dz);
-    [tmpZx,tmpZy,tmpZz] = gradient(W,dx,dy,dz);
+    % vorticity
+    %[omegaY,omegaX,omegaZ] = curl(X,Y,Z,U,V,W);
+    % calculate vorticity directly
+    omegaX = tmpZy - tmpYz;
+    omegaY = tmpXz - tmpZx;
+    omegaZ = tmpYx - tmpXy;
     
     % Stretch term
     tmpX = 0.5*((tmpXx+tmpXx).*omegaX + (tmpXy+tmpYx).*omegaY + (tmpXz+tmpZx).*omegaZ);
@@ -106,11 +106,12 @@ for n = 1:numfiles
     % and $S = \frac{1}{2} \left( \nabla u + \nabla u^{\top} \right)$
 
     viscosity = NGAdatareader_large(fullfile(data_path, filenames(n,:)), 17);
-    rho = NGAdatareader_large(fullfile(data_path, filenames(n,:)), 5);
-    rho_inv = 1.0 ./ rho;
+    density = NGAdatareader_large(fullfile(data_path, filenames(n,:)), 5);
+    density_inv = 1.0 ./ density;
     
     % this is div(u)
-    TMP1 = divergence(X,Y,Z,U,V,W);
+    %TMP1 = divergence(X,Y,Z,U,V,W);
+    div_velocity = tmpXx + tmpYy + tmpZz;
     for i = 1:nx
         for j = 1:ny
             for k = 1:nz
@@ -119,7 +120,7 @@ for n = 1:numfiles
                      tmpYx(i,j,k), tmpYy(i,j,k), tmpYz(i,j,k);
                      tmpZx(i,j,k), tmpZy(i,j,k), tmpZz(i,j,k)];
                 % this is local tau, the viscous stress tensor
-                B = viscosity(i,j,k).*((A+A') - (2./3.).*TMP1(i,j,k)*eye(3));
+                B = viscosity(i,j,k).*((A+A') - (2./3.).*div_velocity(i,j,k)*eye(3));
                 
                 % this overwrites the local grad(u) entries, which are not needed again
                 tmpXx(i,j,k) = B(1,1);
@@ -134,78 +135,85 @@ for n = 1:numfiles
             end
         end
     end
+    % tmpXx, tmpXy, ... now has the viscous stress tensor field (tau)
+
     % divergence of tau
-    tmpX = divergence(X,Y,Z,tmpXx,tmpXy,tmpXz);
-    tmpY = divergence(X,Y,Z,tmpYx,tmpYy,tmpYz);
-    tmpZ = divergence(X,Y,Z,tmpZx,tmpZy,tmpZz);
+    % avoid using the divergence function
+    %tmpX = divergence(Y,X,Z,tmpXy,tmpXx,tmpXz);
+    %tmpY = divergence(Y,X,Z,tmpYy,tmpYx,tmpYz);
+    %tmpZ = divergence(Y,X,Z,tmpZy,tmpZx,tmpZz);
+    [~,tmp_x,~] = gradient(tmpXx,dx,dy,dz);
+    [tmp_y,~,~] = gradient(tmpXy,dx,dy,dz);
+    [~,~,tmp_z] = gradient(tmpXz,dx,dy,dz);
+    tmpX = tmp_x + tmp_y + tmp_z;
+
+    [~,tmp_x,~] = gradient(tmpYx,dx,dy,dz);
+    [tmp_y,~,~] = gradient(tmpYy,dx,dy,dz);
+    [~,~,tmp_z] = gradient(tmpYz,dx,dy,dz);
+    tmpY = tmp_x + tmp_y + tmp_z;
+
+    [~,tmp_x,~] = gradient(tmpZx,dx,dy,dz);
+    [tmp_y,~,~] = gradient(tmpZy,dx,dy,dz);
+    [~,~,tmp_z] = gradient(tmpZz,dx,dy,dz);
+    tmpZ = tmp_x + tmp_y + tmp_z;
+    clear tmp_x tmp_y tmp_z
+    clear tmpXx tmpXy tmpXz tmpYx tmpYy tmpYz tmpZx tmpZy tmpZz
+
     % curl (1/rho * div(tau))
-    [tmpX,tmpY,tmpZ] = curl(X,Y,Z, rho_inv.*tmpX, rho_inv.*tmpY, rho_inv.*tmpZ);
+    %[tmpY,tmpX,tmpZ] = curl(X,Y,Z, density_inv.*tmpX, density_inv.*tmpY, density_inv.*tmpZ);
+    [tmpXy,tmpXx,tmpXz] = gradient(density_inv.*tmpX, dx,dy,dz);
+    [tmpYy,tmpYx,tmpYz] = gradient(density_inv.*tmpY, dx,dy,dz);
+    [tmpZy,tmpZx,tmpZz] = gradient(density_inv.*tmpZ, dx,dy,dz);
+    tmpX = tmpZy - tmpYz;
+    tmpY = tmpXz - tmpZx;
+    tmpZ = tmpYx - tmpXy;
+
     % omega dot curl (1/rho * div(tau))
     TMP2 = omegaX.*tmpX + omegaY.*tmpY + omegaZ.*tmpZ;
     viscous_effects = mean(mean(TMP2,3),2);
 
-    clear tmpXx tmpXy tmpXz tmpYx tmpYy tmpYz tmpZx tmpZy tmpZz viscosity TMP2 tmpX tmpY tmpZ
-    % save TMP1 (div u) for next step
+    clear viscosity TMP2 tmpX tmpY tmpZ
+    clear tmpXx tmpXy tmpXz tmpYx tmpYy tmpYz tmpZx tmpZy tmpZz
+    % save div u for next step
     
+    % enstrophy
+    TMP1 = omegaX.*omegaX + omegaY.*omegaY + omegaZ.*omegaZ;
+    enstrophy = mean(mean(TMP1,3),2);
+
     % Dilitation
     % $ -\omega^2 (\nabla \cdot u) $
-    %TMP1 = divergence(X,Y,Z,U,V,W); % <- this is done in previous step
-    tmpX = omegaX .* omegaX;
-    tmpY = omegaY .* omegaY;
-    tmpZ = omegaZ .* omegaZ;
-    TMP2 = tmpX.*TMP1 + tmpY.*TMP1 + tmpZ.*TMP1;
+    TMP2 = TMP1 .* div_velocity;
     dilatation = -1.0 * mean(mean(TMP2,3),2);
 
-    clear TMP2 TMP1 tmpX tmpY tmpZ
+    clear TMP1 TMP2 div_velocity
     
     % Baroclinic torque
     % $ \frac{\omega}{\rho^2} \cdot ( \nabla \rho \times \nabla P ) $
 
-    % old way
-    % [tmpx,tmpy,tmpz] = gradient(RHO, dx, dy, dz);
-    % [tmpX,tmpY,tmpZ] = gradient(P, dx, dy, dz);
-    % for i = 1:nx
-    %     for j = 1:ny
-    %         for k = 1:nz
-    %             a = [tmpx(i,j,k) tmpy(i,j,k) tmpz(i,j,k)];
-    %             b = [tmpX(i,j,k) tmpY(i,j,k) tmpZ(i,j,k)];
-    %             TMP2(i,j,k) = sum(RHO_inv(i,j,k)^2.*cross(a,b));
-    %         end
-    %     end
-    % end
-    % TMP1 = omegaX.*TMP2 + omegaY.*TMP2 + omegaZ.*TMP2;
-
     pressure = NGAdatareader_large(fullfile(data_path, filenames(n,:)), 4);
 
-    [tmpx,tmpy,tmpz] = gradient(rho, dx, dy, dz);
-    [tmpX,tmpY,tmpZ] = gradient(pressure, dx, dy, dz);
+    [tmpy,tmpx,tmpz] = gradient(density, dx, dy, dz);
+    [tmpY,tmpX,tmpZ] = gradient(pressure, dx, dy, dz);
     TMP1 = tmpy.*tmpZ - tmpz.*tmpY; % x component of $(\nabla \rho \times \nabla P)$
     TMP2 = tmpz.*tmpX - tmpx.*tmpZ; % y component of $(\nabla \rho \times \nabla P)$
     TMP3 = tmpx.*tmpY - tmpy.*tmpX; % z component of $(\nabla \rho \times \nabla P)$
-    TMP1 = (omegaX.*TMP1 + omegaY.*TMP2 + omegaZ.*TMP3) .* (rho_inv.^2);
+    TMP1 = (omegaX.*TMP1 + omegaY.*TMP2 + omegaZ.*TMP3) .* (density_inv.^2);
     baroclinic = mean(mean(TMP1,3),2);
 
-    clear rho pressure rho_inv TMP1 TMP2 TMP3 tmpX tmpY tmpZ tmpx tmpy tmpz
+    clear density pressure density_inv TMP1 TMP2 TMP3 tmpX tmpY tmpZ tmpx tmpy tmpz
     
     % Forcing
-
-    % old (incorrect) forcing term
-    %tmpx = RHO_inv.*srcU;
-    %tmpy = RHO_inv.*srcV;
-    %tmpz = RHO_inv.*srcW;
-    %[tmpX,tmpY,tmpZ] = curl(X,Y,Z,tmpx,tmpy,tmpz);
-    %TMP1 = omegaX.*tmpX+omegaY.*tmpY+omegaZ.*tmpZ;
-    %Forcing = mean(mean(TMP1,3),2);
-
     % forcing term calculation based on Bobbit 2016
     % $A \omega^2 = \omega^2 / (2 \tau_0)$
-    TMP2 = (omegaX.*omegaX + omegaY.*omegaY + omegaZ.*omegaZ).*(973.05);
+    TMP2 = (omegaX.*omegaX + omegaY.*omegaY + omegaZ.*omegaZ) .* 973.05;
     forcing = mean(mean(TMP2,3),2);
-    
-    savename = join(['enstrophy_', num2str(n), '_', transport_model, '.mat']);
-    save(savename, 'LHS', 'stretch', 'dilatation', 'baroclinic', 'viscous_effects', 'forcing')
 
     clear omegaX omegaY omegaZ TMP2
+    
+    savename = join(['enstrophy_', num2str(n), '_', transport_model, '.mat']);
+    save(savename, 'enstrophy', 'stretch', 'dilatation', 'baroclinic', 'viscous_effects', 'forcing')
+
+    disp(['Done with ', num2str(n)])
     
 end
 
