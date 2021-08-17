@@ -166,10 +166,10 @@ plot(inv_GradT_on_T_lam_MC(:,1),inv_GradT_on_T_lam_MC(:,2)/(delta_L_MC/(max(temp
 plot([Trans_T Trans_T],[-2 0.7],'k-.','linewidth',1)
 text(Trans_T-350,-1,'$\leftarrow$ Preheat','interpreter','latex','FontSize',14)
 text(Trans_T+35,-1,'Reaction $\rightarrow$','interpreter','latex','FontSize',14)
-set(gca,'FontSize',16,'linewidth',1,'fontname','Times New Roman')
+set(gca,'FontSize',14,'linewidth',1)
 xlabel('$T$ [K]','interpreter','latex','FontSize',16);
 ylabel('$\langle \delta_{t}|T \rangle/ \delta_{L}$','interpreter','latex','FontSize',16);
-legend('MA','MC','MA Laminar','MC Laminar','location','southeast','interpreter','latex')
+legend('MA','MC','MA Laminar','MC Laminar','location','southeast','interpreter','latex','FontSize',16)
 legend boxoff
 set(gcf,'units','centimeters','position',[0,0,6.7*2,6.7*2]);
 grid on
@@ -185,7 +185,7 @@ hold on
 plot(gradT_on_T_MC(:,1),gradT_on_T_MC(:,2)*(delta_L_MC/(max(temp_MC_lam)-min(temp_MC_lam))),'k','linewidth',2)
 plot(gradT_on_T_lam_MA(:,1),gradT_on_T_lam_MA(:,2)*(delta_L_MA/(max(temp_MA_lam)-min(temp_MA_lam))),'r--','linewidth',2)
 plot(gradT_on_T_lam_MC(:,1),gradT_on_T_lam_MC(:,2)*(delta_L_MC/(max(temp_MC_lam)-min(temp_MC_lam))),'r','linewidth',2)
-set(gca,'FontSize',14,'linewidth',1,'fontname','Times New Roman')
+set(gca,'FontSize',14,'linewidth',1)
 xlabel('$T$ [K]','interpreter','latex','FontSize',14);
 ylabel('$\langle \tilde{\chi}|T \rangle \delta_{L}$','interpreter','latex','FontSize',14);
 axis([300 1700 0 2])
@@ -194,7 +194,7 @@ set(gcf,'units','centimeters')
 grid on
 pos = get(gcf,'position');
 AR = pos(3)/pos(4);
-set(gcf,'units','centimeters','position',[0,0,6.7*2,6.7*2]);
+set(gcf,'units','centimeters','position',[0,0,6.7*3,6.7*3]);
 
 exportgraphics(h, 'flame_width_conditionalmean.pdf', 'ContentType', 'vector')
 
@@ -252,7 +252,7 @@ set(gcf,'color','w')
 set(gcf,'units','centimeters')
 pos = get(gcf,'position');
 AR = pos(3)/pos(4);
-set(gcf,'units','centimeters','position',[0,0,6.7*2,6.7*2]);
+set(gcf,'units','centimeters','position',[0,0,6.7*3,6.7*3]);
 grid on
 
 legend('MA','MC','MA Laminar','MC Laminar','location','SE','interpreter','latex','FontSize',14)
